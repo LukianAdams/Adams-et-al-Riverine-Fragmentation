@@ -40,7 +40,7 @@ plot(nam_shape)
 plot(gwy_shape)
 plot(dum_shape)
 
-#Writing cleaned shapefiles
+#Saving cleaned river shapefiles
 saveRDS(mur_shape, file = "mur_shape_clean.rds")
 saveRDS(lac_shape, file = "lac_shape_clean.rds")
 saveRDS(mac_shape, file = "mac_shape_clean.rds")
