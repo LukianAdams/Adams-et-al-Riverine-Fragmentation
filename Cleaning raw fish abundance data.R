@@ -1,9 +1,11 @@
 ###R Script 1
 ###This code is used to import and clean electrofishing data
 
-library(tidyverse) #Loading relevant packages
+#Loading relevant packages
+library(tidyverse)
 
-electro_data <- rbind(read_csv("Data/electrofishing_data.csv"), read_csv("Data/electrofishing_data2.csv")) %>% #Importing data
+#Importing and cleaning fish abundance data collected via electrofishing
+electro_data <- rbind(read_csv("Data/electrofishing_data.csv"), read_csv("Data/electrofishing_data2.csv")) %>%
   distinct() %>% #Removing duplicated observations found in both csv files
   filter(CommonName != "Zero catch at DRY site" & CommonName != "Yabby" & CommonName != "Freshwater prawn" & CommonName != "Shrimp" & CommonName != "Murray short-necked turtle" & CommonName != "Murray crayfish" & CommonName != "Eastern long-necked tortoise" & CommonName != "Platypus" & CommonName != "Unknown Shrimp" & CommonName != "Unidentified Euastacus" & ElectrofishingDuration != "NA" & ElectrofishingDuration >= 10 & ElectrofishingDuration <= 1000 & WaterbodyName != "Macintyre River") %>% #Removing dry sites (no electrofishing occured), catches of non-fish taxa, observations without an appropriate sampling effort, and observations from Macintyre River (too few observations)
   droplevels() %>%
@@ -35,9 +37,11 @@ electro_data <- rbind(read_csv("Data/electrofishing_data.csv"), read_csv("Data/e
 
 electro_data <- subset(electro_data, !(Method == "BPE" & WaterbodyName == "Murrumbidgee River")) #Removing backpack electrofishing for the Murrumbidgee (too few observations)
 
-df_sites <- electro_data %>% #Making a version of fish abundance dataset with one observation per site
+#Making a version of fish abundance dataset with one observation per site
+df_sites <- electro_data %>%
   group_by(LonLat) %>%
   summarize(across(everything(), first))
 
-write_csv(electro_data, file = "electo_data_clean.csv") #Writing cleaned electrofishing data
-write_csv(df_sites, file = "df_sites.csv") #Writing electrofishing sites to csv to be imported into QGIS and used for spatial processing
+#Saving cleaned csv files
+write_csv(electro_data, file = "electo_data_clean.csv")
+write_csv(df_sites, file = "df_sites.csv")
