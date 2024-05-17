@@ -43,5 +43,5 @@ df_sites <- electro_data %>%
   summarize(across(everything(), first))
 
 #Saving cleaned csv files
-write_csv(electro_data, file = "electo_data_clean.csv")
-write_csv(df_sites, file = "df_sites.csv")
+write_csv(electro_data, file = "Data/electo_data_clean.csv")
+write_csv(df_sites, file = "Data/df_sites.csv")
