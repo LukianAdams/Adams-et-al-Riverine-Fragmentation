@@ -181,9 +181,23 @@ for (i in seq_along(rivers)) {
   assign(species_list_name, species)
   
   df_list[[i]] <- subset_df
-  
 }
-names(df_list) <- c("mur_df", "lac_df", "mac_df", "nam_df", "gwy_df", "dum_df")
 
-#Saving list of cleaned dataframes
-saveRDS(df_list, file = "Data/df_list.rds")
+#Filtering data deficient river sections
+df_list_filtered <- list()
+for (i in seq_along(df_list)){
+  df_filtered <- df_list[[i]] %>%
+     group_by(up_bar) %>%
+     filter(n() >= 75) %>%
+     ungroup() %>%
+     droplevels()
+  df_list_filtered[[i]] <- df_filtered
+
+#Saving updated electrofishing datasets for each river
+for (i in seq_along(df_list_filtered)) {
+  df <- df_list_filtered[[i]]
+  csv_name <- paste0(names(df_list_filtered)[i], ".csv")
+  write.csv(df, file = csv_name, row.names = FALSE)
+}
+
+                                            
