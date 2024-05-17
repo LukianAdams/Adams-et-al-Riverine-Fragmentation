@@ -356,12 +356,12 @@ first_row_data_map <- plot_grid(data_map_australia, data_map_legend,
                                 nrow = 1)
 first_row_data_map
 
-ggsave(filename = "Australia Map.png", plot = first_row_data_map, width = 300, height = 200, units = "mm", device = "png", dpi = 300)
+ggsave(filename = "Output/Australia Map.png", plot = first_row_data_map, width = 300, height = 200, units = "mm", device = "png", dpi = 300)
 
 second_row_data_map <- data_map_north + data_map_south + plot_layout(widths = c(1, (7.1/5.9-0.05)))
 second_row_data_map
 
-ggsave(filename = "Data Map.png", plot = second_row_data_map, width = 400, height = 300, units = "mm", device = "png", dpi = 300)
+ggsave(filename = "Output/Data Map.png", plot = second_row_data_map, width = 400, height = 300, units = "mm", device = "png", dpi = 300)
 
 data_map_plot_full <- plot_grid(first_row_data_map, second_row_data_map,
                                 nrow = 2,
@@ -369,7 +369,7 @@ data_map_plot_full <- plot_grid(first_row_data_map, second_row_data_map,
 data_map_plot_full
 
 #Saving map in high quality
-ggsave(filename = "Data Map.png", plot = data_map_plot_full, width = 400, height = 400, units = "mm", device='png', dpi=300)
+ggsave(filename = "Output/Data Map.png", plot = data_map_plot_full, width = 400, height = 400, units = "mm", device='png', dpi=300)
 
 #Saving map dataframe
 write_csv(data_map_df, file = "Data/data_map_df.csv")
