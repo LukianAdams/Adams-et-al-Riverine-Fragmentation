@@ -77,268 +77,271 @@ i = as.numeric(Sys.getenv('PBS_ARRAY_INDEX'))
 
 #Running river models
 
-if (i == 1){ #First 'full' model
+if (i == 1){
   
-  mur_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Bonyherring, Redfin, Rainbowtrout, Macquarieperch, Silverperch, Troutcod, NorthernRiverBlackfish, Rainbowfishspeciescomplex, Flatheadgudgeonspeciescomplex) #Creating multivariate response
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + up_bar + up_bar:scale(DaysSinceOverbank) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR") #Defining model
+  mur_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Bonyherring, Redfin, Silverperch, Troutcod, NorthernRiverBlackfish, Rainbowfishspeciescomplex) 
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + up_bar + up_bar:scale(DaysSinceOverbank, center = FALSE) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-  mur_bars_water_fit <- brm(mur_bars_water_bform, data = mur_df, #Fitting model
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0, #5000 iterations total, 2000 of which are warm up iterations, initial parameter values set to 0
-                            backend = "cmdstanr", threads = threading(8), seed = 123, #Running using multithreading - multiple cores per chain
-                            prior = mur_priors,  control = list(adapt_delta = 0.9975, max_treedepth = 15), #Setting priors, decreasing step size and increasing maximum tree depth
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes") #Saving all parameters for testing and diagnostics
-
-  saveRDS(mur_bars_water_fit, file = "Output/mur_overbank_fit.rds")
+  mur_bars_water_fit <- brm(mur_bars_water_bform, data = mur_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      prior = mur_priors,  control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
+  saveRDS(mur_bars_water_fit, file = "Output/Fitted Models/mur_bars_water_fit.rds")
+    
 } else if (i == 2){
   
   lac_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Bonyherring, Redfin, Flatheadgudgeonspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + up_bar + up_bar:scale(DaysSinceOverbank) + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + up_bar + up_bar:scale(DaysSinceOverbank, center = FALSE) + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-  lac_bars_water_fit <- brm(lac_bars_water_bform, data = lac_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = lac_priors,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
+  lac_bars_water_fit <- brm(lac_bars_water_bform, data = lac_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      prior = lac_priors,  control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
-  saveRDS(lac_bars_water_fit, file = "Output/lac_overbank_fit.rds")
+  saveRDS(lac_bars_water_fit, file = "Output/Fitted Models/lac_bars_water_fit.rds")
   
 } else if (i == 3){
   
   mac_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Redfin, Rainbowfishspeciescomplex, Flatheadgudgeonspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + up_bar + up_bar:scale(DaysSinceOverbank) + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + up_bar + up_bar:scale(DaysSinceOverbank, center = FALSE) + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-  mac_bars_water_fit <- brm(mac_bars_water_bform, data = mac_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = mac_priors,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
+  mac_bars_water_fit <- brm(mac_bars_water_bform, data = mac_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      prior = mac_priors,  control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
-  saveRDS(mac_bars_water_fit, file = "Output/mac_overbank_fit.rds")
+  saveRDS(mac_bars_water_fit, file = "Output/Fitted Models/mac_bars_water_fit.rds")
+  
   
 } else if (i == 4){
   
   gwy_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Redfin, Rainbowfishspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + up_bar + up_bar:scale(DaysSinceOverbank) + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + up_bar + up_bar:scale(DaysSinceOverbank, center = FALSE) + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-  gwy_bars_water_fit <- brm(gwy_bars_water_bform, data = gwy_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = gwy_priors,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
+  gwy_bars_water_fit <- brm(gwy_bars_water_bform, data = gwy_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      prior = gwy_priors,  control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
-  saveRDS(gwy_bars_water_fit, file = "Output/gwy_overbank_fit.rds")
+  saveRDS(gwy_bars_water_fit, file = "Output/Fitted Models/gwy_bars_water_fit.rds")
   
-} else if (i == 5){ #Namoi and dumaresq/mole models were fastest to run and were completed in the same job to reduce number of jobs needed in batch
+} else if (i == 5){
   
-  nam_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Silverperch, Rainbowfishspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + up_bar + up_bar:scale(DaysSinceOverbank) + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+   dum_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Southernpurplespottedgudgeon, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Oliveperchlet, Rainbowfishspeciescomplex) 
+                             ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + up_bar + up_bar:scale(DaysSinceOverbank, center = FALSE) + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+   
+   dum_bars_water_fit <- brm(dum_bars_water_bform, data = dum_df_filtered,
+                       family = zero_inflated_negbinomial,
+                       chains = 4, cores = 4,
+                       iter = 5000, warmup = 2000, init = 0,
+                       backend = "cmdstanr", threads = threading(8), seed = 123,
+                       prior = dum_priors,  control = list(adapt_delta = 0.99, max_treedepth = 12),
+                       save_pars = save_pars(all = TRUE))
+   
+   saveRDS(dum_bars_water_fit, file = "Output/Fitted Models/dum_bars_water_fit.rds")
   
-  nam_bars_water_fit <- brm(nam_bars_water_bform, data = nam_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = nam_priors,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
+  nam_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Rainbowfishspeciescomplex) 
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + up_bar + up_bar:scale(DaysSinceOverbank, center = FALSE) + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-  saveRDS(nam_bars_water_fit, file = "Output/nam_overbank_fit.rds")
+  nam_bars_water_fit <- brm(nam_bars_water_bform, data = nam_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      prior = nam_priors,  control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
-  dum_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Southernpurplespottedgudgeon, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Oliveperchlet, Rainbowfishspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + up_bar + up_bar:scale(DaysSinceOverbank) + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+  saveRDS(nam_bars_water_fit, file = "Output/Fitted Models/nam_bars_water_fit.rds")
   
-  dum_bars_water_fit <- brm(dum_bars_water_bform, data = dum_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = dum_priors,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
+} else if (i == 6){
   
-  saveRDS(dum_bars_water_fit, file = "Output/dum_overbank_fit.rds")
+  mur_bars_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Bonyherring, Redfin, Silverperch, Troutcod, NorthernRiverBlackfish, Rainbowfishspeciescomplex) 
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + up_bar + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-} else if (i == 6){ #First 'no overbank' model
+  mur_bars_fit <- brm(mur_bars_bform, data = mur_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      prior = mur_priors,  control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
-  mur_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Bonyherring, Redfin, Rainbowtrout, Macquarieperch, Silverperch, Troutcod, NorthernRiverBlackfish, Rainbowfishspeciescomplex, Flatheadgudgeonspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + up_bar + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
-  
-  mur_bars_water_fit <- brm(mur_bars_water_bform, data = mur_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = mur_priors,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
-  
-  saveRDS(mur_bars_water_fit, file = "Output/mur_bar_fit.rds")
-  
+  saveRDS(mur_bars_fit, file = "Output/Fitted Models/mur_bars_fit.rds")
+    
 } else if (i == 7){
   
-  lac_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Bonyherring, Redfin, Flatheadgudgeonspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + up_bar + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+  lac_bars_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Bonyherring, Redfin, Flatheadgudgeonspeciescomplex) 
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + up_bar + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-  lac_bars_water_fit <- brm(lac_bars_water_bform, data = lac_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = lac_priors,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
+  lac_bars_fit <- brm(lac_bars_bform, data = lac_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      prior = lac_priors,  control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
-  saveRDS(lac_bars_water_fit, file = "Output/lac_bar_fit.rds")
+  saveRDS(lac_bars_fit, file = "Output/Fitted Models/lac_bars_fit.rds")
   
 } else if (i == 8){
   
-  mac_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Redfin, Rainbowfishspeciescomplex, Flatheadgudgeonspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + up_bar + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+  mac_bars_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Redfin, Rainbowfishspeciescomplex, Flatheadgudgeonspeciescomplex) 
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + up_bar + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-  mac_bars_water_fit <- brm(mac_bars_water_bform, data = mac_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = mac_priors,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
+  mac_bars_fit <- brm(mac_bars_bform, data = mac_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      prior = mac_priors,  control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
-  saveRDS(mac_bars_water_fit, file = "Output/mac_bar_fit.rds")
+  saveRDS(mac_bars_fit, file = "Output/Fitted Models/mac_bars_fit.rds")
+  
   
 } else if (i == 9){
   
-  gwy_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Redfin, Rainbowfishspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + up_bar + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+  gwy_bars_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Redfin, Rainbowfishspeciescomplex) 
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + up_bar + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-  gwy_bars_water_fit <- brm(gwy_bars_water_bform, data = gwy_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = gwy_priors,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
+  gwy_bars_fit <- brm(gwy_bars_bform, data = gwy_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      prior = gwy_priors,  control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
-  saveRDS(gwy_bars_water_fit, file = "Output/gwy_bar_fit.rds")
+  saveRDS(gwy_bars_fit, file = "Output/Fitted Models/gwy_bars_fit.rds")
   
 } else if (i == 10){
   
-  nam_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Silverperch, Rainbowfishspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + up_bar + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+   dum_bars_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Southernpurplespottedgudgeon, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Oliveperchlet, Rainbowfishspeciescomplex) 
+                             ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + up_bar + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+   
+   dum_bars_fit <- brm(dum_bars_bform, data = dum_df_filtered,
+                       family = zero_inflated_negbinomial,
+                       chains = 4, cores = 4,
+                       iter = 5000, warmup = 2000, init = 0,
+                       backend = "cmdstanr", threads = threading(8), seed = 123,
+                       prior = dum_priors,  control = list(adapt_delta = 0.99, max_treedepth = 12),
+                       save_pars = save_pars(all = TRUE))
+   
+   saveRDS(dum_bars_fit, file = "Output/Fitted Models/dum_bars_fit.rds")
   
-  nam_bars_water_fit <- brm(nam_bars_water_bform, data = nam_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = nam_priors,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
+  nam_bars_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Rainbowfishspeciescomplex) 
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + up_bar + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-  saveRDS(nam_bars_water_fit, file = "Output/nam_bar_fit.rds")
+  nam_bars_fit <- brm(nam_bars_bform, data = nam_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      prior = nam_priors,  control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
-  dum_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Southernpurplespottedgudgeon, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Oliveperchlet, Rainbowfishspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + up_bar + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+  saveRDS(nam_bars_fit, file = "Output/Fitted Models/nam_bars_fit.rds")
   
-  dum_bars_water_fit <- brm(dum_bars_water_bform, data = dum_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = dum_priors,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
+} else if (i == 11){
   
-  saveRDS(dum_bars_water_fit, file = "Output/dum_bar_fit.rds")
+  mur_null_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Bonyherring, Redfin, Silverperch, Troutcod, NorthernRiverBlackfish, Rainbowfishspeciescomplex) 
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-} else if (i == 11){ #First 'no barriers' model
+  mur_null_fit <- brm(mur_null_bform, data = mur_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
-  mur_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Bonyherring, Redfin, Rainbowtrout, Macquarieperch, Silverperch, Troutcod, NorthernRiverBlackfish, Rainbowfishspeciescomplex, Flatheadgudgeonspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
-  
-  mur_bars_water_fit <- brm(mur_bars_water_bform, data = mur_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = mur_priors_null,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
-  
-  saveRDS(mur_bars_water_fit, file = "Output/mur_null_fit.rds")
-  
+  saveRDS(mur_null_fit, file = "Output/Fitted Models/mur_null_fit.rds")
+    
 } else if (i == 12){
   
-  lac_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Bonyherring, Redfin, Flatheadgudgeonspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+  lac_null_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Bonyherring, Redfin, Flatheadgudgeonspeciescomplex) 
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-  lac_bars_water_fit <- brm(lac_bars_water_bform, data = lac_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = lac_priors_null,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
+  lac_null_fit <- brm(lac_null_bform, data = lac_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
-  saveRDS(lac_bars_water_fit, file = "Output/lac_null_fit.rds")
+  saveRDS(lac_null_fit, file = "Output/Fitted Models/lac_null_fit.rds")
   
 } else if (i == 13){
   
-  mac_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Redfin, Rainbowfishspeciescomplex, Flatheadgudgeonspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+  mac_null_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Redfin, Rainbowfishspeciescomplex, Flatheadgudgeonspeciescomplex) 
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-  mac_bars_water_fit <- brm(mac_bars_water_bform, data = mac_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = mac_priors_null,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
+  mac_null_fit <- brm(mac_null_bform, data = mac_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
-  saveRDS(mac_bars_water_fit, file = "Output/mac_null_fit.rds")
+  saveRDS(mac_null_fit, file = "Output/Fitted Models/mac_null_fit.rds")
+  
   
 } else if (i == 14){
   
-  gwy_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Redfin, Rainbowfishspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+  gwy_null_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Redfin, Rainbowfishspeciescomplex) 
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-  gwy_bars_water_fit <- brm(gwy_bars_water_bform, data = gwy_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = gwy_priors_null,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
+  gwy_null_fit <- brm(gwy_null_bform, data = gwy_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
-  saveRDS(gwy_bars_water_fit, file = "Output/gwy_null_fit.rds")
+  saveRDS(gwy_null_fit, file = "Output/Fitted Models/gwy_null_fit.rds")
   
 } else if (i == 15){
   
-  nam_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Silverperch, Rainbowfishspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+   dum_null_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Southernpurplespottedgudgeon, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Oliveperchlet, Rainbowfishspeciescomplex) 
+                             ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+   
+   dum_null_fit <- brm(dum_null_bform, data = dum_df_filtered,
+                       family = zero_inflated_negbinomial,
+                       chains = 4, cores = 4,
+                       iter = 5000, warmup = 2000, init = 0,
+                       backend = "cmdstanr", threads = threading(8), seed = 123,
+                       control = list(adapt_delta = 0.99, max_treedepth = 12),
+                       save_pars = save_pars(all = TRUE))
+   
+   saveRDS(dum_null_fit, file = "Output/Fitted Models/dum_null_fit.rds")
   
-  nam_bars_water_fit <- brm(nam_bars_water_bform, data = nam_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = nam_priors_null,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
+  nam_null_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Rainbowfishspeciescomplex) 
+                            ~ t2(scale(DateNum), scale(Distance), bs = c("ts", "ts"), k = 20, full = TRUE)  + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
   
-  saveRDS(nam_bars_water_fit, file = "Output/nam_null_fit.rds")
+  nam_null_fit <- brm(nam_null_bform, data = nam_df_filtered,
+                      family = zero_inflated_negbinomial,
+                      chains = 4, cores = 4,
+                      iter = 5000, warmup = 2000, init = 0,
+                      backend = "cmdstanr", threads = threading(8), seed = 123,
+                      control = list(adapt_delta = 0.99, max_treedepth = 12),
+                      save_pars = save_pars(all = TRUE))
   
-  dum_bars_water_bform <- bf(mvbind(Carpgudgeonspeciescomplex, Commoncarp, Unspeckedhardyhead, Freshwatercatfish, EasternGambusia, Goldenperch, Murraycod, Southernpurplespottedgudgeon, Australiansmelt, Goldfish, Spangledperch, Bonyherring, Oliveperchlet, Rainbowfishspeciescomplex) 
-                             ~ s(scale(DateNum), k = 10, bs = "ts") + s(scale(Distance), k = 5, bs = "ts") + (1|Method) + (1|d|SampleID) + offset(log(ElectrofishingDuration)), decomp = "QR")
+  saveRDS(nam_null_fit, file = "Output/Fitted Models/nam_null_fit.rds")
   
-  dum_bars_water_fit <- brm(dum_bars_water_bform, data = dum_df,
-                            family = zero_inflated_negbinomial,
-                            chains = 4, cores = 4,
-                            iter = 5000, warmup = 2000, init = 0,
-                            backend = "cmdstanr", threads = threading(8), seed = 123,
-                            prior = dum_priors_null,  control = list(adapt_delta = 0.9975, max_treedepth = 15),
-                            save_pars = save_pars(all = TRUE), sample_prior = "yes")
-  
-  saveRDS(dum_bars_water_fit, file = "Output/dum_null_fit.rds")
-  
-}
+} 
