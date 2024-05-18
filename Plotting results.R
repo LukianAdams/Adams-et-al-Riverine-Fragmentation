@@ -1,5 +1,7 @@
 #Loading relevant packages
-library(tidyverse
+library(tidyverse)
+library(emmeans)
+library(ggdist)
 
 #Plot 1 - Comparisons of effects sizes between barriers
 bar_pred <- emmeans(meta_fit_bar, ~Barrier, tran = bc_tran, epred = TRUE) %>% #Extracting marginal posterior draws for each barrier or barrier cluster
