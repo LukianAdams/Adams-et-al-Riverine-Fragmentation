@@ -4,23 +4,33 @@ library(emmeans)
 library(ggdist)
 
 #Plot 1 - Comparisons of effects sizes between barriers
+bar_pred <- read_csv("bar_pred.csv")
 bar_pred <- emmeans(meta_fit_bar, ~Barrier, tran = bc_tran, epred = TRUE) %>% #Extracting marginal posterior draws for each barrier or barrier cluster
   regrid(type = "response") %>%
   gather_emmeans_draws() %>%
-  as.data.table()
-
-median_hdi(bar_pred$.value, .width = c(0.89, 0.95))
-
-bar_pred_point_estimates <- emmeans(meta_fit_bar, ~Barrier, tran = bc_tran, epred = TRUE) %>%
-  regrid(type = "response")
-summary(bar_pred_point_estimates, level = 0.89)
+  as.data.table() %>%
+  mutate(`Control Barrier` = "Real Barrier")
 
 bar_pred <- as.data.frame(bar_pred[meta_df_bars_dt, on = "Barrier"]) %>%
   rename(`Number of Barriers` = BarrierCount) %>%
   rename(`Height of Barriers` = HeightSum)
 bar_pred
 
-bar_plot <- ggplot(bar_pred) +
+bar_pred_ctrl <- read_csv("bar_pred_ctrl.csv")
+bar_pred_ctrl <- emmeans(meta_fit_bar_ctrl, ~Barrier, tran = bc_tran, epred = TRUE) %>% #Extracting marginal posterior draws for each barrier or barrier cluster
+  regrid(type = "response") %>%
+  gather_emmeans_draws() %>%  
+  mutate(`Height of Barriers` = 2,
+    River = sub(".*\\s", "", Barrier),
+    `Control Barrier` = "Control Barrier") %>%
+  mutate(River = ifelse(River == "Dumaresq", "Dumaresq/Mole", River))
+
+bar_pred_ctrl$Barrier <- gsub("Barrier", "Comparison", bar_pred_ctrl$Barrier)
+
+bar_pred_full <- full_join(bar_pred, bar_pred_ctrl, by = c("Barrier", ".value", "Height of Barriers", "River", "Control Barrier"))
+median_hdi(bar_pred$.value, .width = c(0.89, 0.95))
+
+bar_plot <- ggplot(bar_pred_full) +
   stat_pointinterval(point_interval = "median_hdi", .width = c(0.66, 0.89), interval_size_range = c(0.6,1.4),
     aes(y = reorder(Barrier, .value, FUN = median), x = .value, point_size = `Height of Barriers`, colour = River)) +
   scale_point_size_continuous(range = c(2.2, 8.5), breaks = c(0, 15, 100), trans = "sqrt") +
@@ -233,13 +243,17 @@ taxa_pred <- emmeans(meta_fit_taxa, ~SpeciesNames, tran = bc_tran, epred = TRUE)
   regrid(type = "response") %>%
   gather_emmeans_draws() %>%
   as.data.table()
-
 meta_df_fish_dt <- meta_df[,30:52] %>%
   group_by(SpeciesNames) %>%
   summarise(across(everything(), first)) %>%
   as.data.table()
 
-taxa_pred <- as.data.frame(taxa_pred[meta_df_fish_dt, on = "SpeciesNames"])
+taxa_pred <- as.data.frame(taxa_pred[meta_df_fish_dt, on = "SpeciesNames"]) %>%
+  mutate(SpeciesNames = if_else(SpeciesNames %in% 
+                                  c("Redfin perch", "Rainbow trout", "Goldfish & hybrids", "Eastern mosquitofish", "Common carp"), 
+                                paste0(SpeciesNames, "*"), 
+                                SpeciesNames))
+
 
 taxa_lrr_breaks <- c(0,1,2,3)
 taxa_rr_breaks <- exp(taxa_lrr_breaks)
