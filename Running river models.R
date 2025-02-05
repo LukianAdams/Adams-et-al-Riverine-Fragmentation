@@ -1,4 +1,4 @@
-###Note - This code is computationally intensive, and is set up to run as a batch job on a high performance computing cluster with 32 cores per job. Expect a wait time ranging from 1 hour - 2 weeks per job depending on the number of observations and the number of fish taxa in your data
+###Note - This code is computationally intensive, and is set up to run as a batch job on a high performance computing cluster with 32 cores per job. Expect a wait time ranging from 1 hour - 4 weeks per job depending on the number of observations and the number of fish taxa in your data
 
 #Loading relevant packages
 library(brms)
