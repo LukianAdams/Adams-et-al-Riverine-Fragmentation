@@ -36,8 +36,26 @@ i = as.numeric(Sys.getenv('PBS_ARRAY_INDEX'))
 #Running meta regression models
 if (i == 1){
   
-  #Model 1 - Barrier ID
+  #Model 1a - Barrier ID with no controls
   meta_fit_bar <- brm(LRR_trans | se(LRR_SE, sigma = TRUE)
+                      ~ Barrier + Barrier:scale(DaysSinceOverbank) + 
+                        (1|SpeciesNames) + (1|River),
+                      data = meta_df,
+                      family = gaussian,
+                      chains = 4, cores = 4,
+                      backend = "cmdstanr",
+                      threads = threading(4),
+                      iter = 4000, warmup = 2000,
+                      seed = 123,
+                      control = list(adapt_delta = 0.995, max_treedepth = 15),
+                      save_pars = save_pars(all = TRUE),
+                      sample_prior = "yes",
+                      prior = c(set_prior("student_t(3,0,1)", class = "b"),
+                                set_prior("student_t(3,0,1)", class = "sd")))
+  saveRDS(meta_fit_bar, file = "meta_fit_bar.rds")
+
+  #Model 1b - Barrier ID with control comparisons
+  meta_fit_bar_ctrl <- brm(LRR_trans | se(LRR_SE, sigma = TRUE)
                       ~ Barrier + Barrier:scale(DaysSinceOverbank) + 
                         (1|SpeciesNames) + (1|River),
                       data = meta_df_ctrl, #Control dataset is used only for this model
@@ -52,7 +70,7 @@ if (i == 1){
                       sample_prior = "yes",
                       prior = c(set_prior("student_t(3,0,1)", class = "b"),
                                 set_prior("student_t(3,0,1)", class = "sd")))
-  saveRDS(meta_fit_bar, file = "meta_fit_bar.rds")
+  saveRDS(meta_fit_bar_ctrl, file = "meta_fit_bar_ctrl.rds")
   
   #Model 2 - Barrier features
   meta_fit_bar_features <- brm(bf(LRR_trans | se(LRR_SE, sigma = TRUE)
