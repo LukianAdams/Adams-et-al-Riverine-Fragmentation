@@ -15,6 +15,17 @@ meta_df <- read_csv("meta_df.csv") %>%
          DaysSinceOverbankScaled = scale(DaysSinceOverbank)[,1]) %>%
   mutate_at(c("SpeciesNames", "Species", "River", "Barrier", "BarrierType", "StructureType", "NorthernBasinGuild", "Depth", "Native", "BodyShape", "TailShape", "SpawningMethod", "MigrationMode", "Fecundity", "LarvalDrift", "EggMorphology"), as.factor)
 
+#Loading in version of dataset with control comparisons included
+meta_df_ctrl <- read_csv("meta_df_ctrl.csv") %>%
+  
+  #Mutating columns to the correct type
+  mutate(MovementDistance = factor(MovementDistance, levels = c("Short", "Medium", "Long"), ordered = TRUE),
+         Longevity = factor(Longevity, levels = c("Short", "Medium", "Long"), ordered = TRUE),
+         RemediatedProp = factor(RemediatedProp, levels = c("None","Half", "Full"), ordered = TRUE),
+         DaysSinceOverbankScaled = scale(DaysSinceOverbank)[,1]) %>%
+  mutate_at(c("SpeciesNames", "Species", "River", "Barrier", "BarrierType", "StructureType", "NorthernBasinGuild", "Depth", "Native", "BodyShape", "TailShape", "SpawningMethod", "MigrationMode", "Fecundity", "LarvalDrift", "EggMorphology"), as.factor)
+
+
 #Creating filtered version of dataframe with no fish taxa without USprint data
 meta_df_filtered <- subset(meta_df, !is.na(Usprint)) %>%
   droplevels()
@@ -29,7 +40,7 @@ if (i == 1){
   meta_fit_bar <- brm(LRR_trans | se(LRR_SE, sigma = TRUE)
                       ~ Barrier + Barrier:scale(DaysSinceOverbank) + 
                         (1|SpeciesNames) + (1|River),
-                      data = meta_df,
+                      data = meta_df_ctrl, #Control dataset is used only for this model
                       family = gaussian,
                       chains = 4, cores = 4,
                       backend = "cmdstanr",
